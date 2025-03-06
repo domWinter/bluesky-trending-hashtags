@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Trending Hashtags</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script
+        src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp,container-queries"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.2/echarts.min.js"></script>
+</head>
+
+<body>
+    <div id="app">
+        <div class="flex flex-col items-center justify-center mt-8">
+            <h2 class="text-2xl font-semibold mt-4 mb-4">Bluesky Trending Hashtash</h2>
+            {{ stream }}
+        </div>
+    </div>
+</body>
+
+<script lang="ts">
+    
+    const { ref, createApp } = Vue
+
+    function new_ws_conn() {
+        console.log("Creating new websocket connection!")
+        let url = new URL("/ws/v1", window.location.href);
+        url.protocol = url.protocol.replace("http", "ws");
+        return new WebSocket(url.href);
+    }
+
+    createApp({
+        setup() {
+            const stream = ref("")
+            ws = new_ws_conn();
+
+            ws.onopen = () => {
+                console.log("Websocket connected!");
+            }
+
+            ws.onclose = () => {
+                console.log("Websocket closed!");
+            }
+
+            ws.onmessage = (ev) => {
+                if (ev.data === "CLOSE") {
+                    query.value = ""
+                    return
+                }
+                stream.value += ev.data
+            };
+
+            return {
+                stream
+            }
+        }
+    }).mount('#app')
+</script>
